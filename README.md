@@ -1,16 +1,20 @@
+## MFRC522 Pin Layout for Arduino
 
- /* Typical pin layout used:
- * -----------------------------------------------------------------------------------------
- *             MFRC522      Arduino       Arduino   Arduino    Arduino          Arduino
- *             Reader/PCD   Uno/101       Mega      Nano v3    Leonardo/Micro   Pro Micro
- * Signal      Pin          Pin           Pin       Pin        Pin              Pin
- * -----------------------------------------------------------------------------------------
- * RST/Reset   RST          9             5         D9         RESET/ICSP-5     RST
- * SPI SS      SDA(SS)      10            53        D10        10               10
- * SPI MOSI    MOSI         11 / ICSP-4   51        D11        ICSP-4           16
- * SPI MISO    MISO         12 / ICSP-1   50        D12        ICSP-1           14
- * SPI SCK     SCK          13 / ICSP-3   52        D13        ICSP-3           15
- */
+This table shows the typical pin layout used when connecting an MFRC522 RFID Reader/PCD to various Arduino boards:
+
+| Signal | Pin (MFRC522) | Pin (Uno/101) | Pin (Mega) | Pin (Nano v3) | Pin (Leonardo/Micro) | Pin (Pro Micro) |
+|---|---|---|---|---|---|---|
+| RST/Reset | RST | 9 | 5 | D9 | RESET/ICSP-5 | RST |
+| SPI SS | SDA(SS) | 10 | 53 | D10 | 10 | 10 |
+| SPI MOSI | MOSI | 11 / ICSP-4 | 51 | D11 | ICSP-4 | 16 |
+| SPI MISO | MISO | 12 / ICSP-1 | 50 | D12 | ICSP-1 | 14 |
+| SPI SCK | SCK | 13 / ICSP-3 | 52 | D13 | ICSP-3 | 15 |
+
+**Notes:**
+
+* Some pins may have alternative names depending on the specific Arduino board model.
+* This is a typical layout; consult your board's documentation for exact pin mappings.
+
 
 #include <EEPROM.h>     // We are going to read and write PICC's UIDs from/to EEPROM
 #include <SPI.h>        // RC522 Module uses SPI protocol
@@ -540,7 +544,7 @@ MFRC522::StatusCode MFRC522::PCD_CalculateCRC(  byte *data,   ///< In: Pointer t
   PCD_WriteRegister(FIFODataReg, length, data); // Write data to the FIFO
   PCD_WriteRegister(CommandReg, PCD_CalcCRC);   // Start the calculation
   
-  // Wait for the CRC calculation to complete. Each iteration of the while-loop takes 17.73µs.
+  // Wait for the CRC calculation to complete. Each iteration of the while-loop takes 17.73ï¿½s.
   // TODO check/modify for other architectures than Arduino Uno 16bit
   uint16_t i = 5000;
   byte n;
@@ -579,7 +583,7 @@ void MFRC522::PCD_Init() {
   
   if (digitalRead(_resetPowerDownPin) == LOW) { //The MFRC522 chip is in power down mode.
     digitalWrite(_resetPowerDownPin, HIGH);   // Exit power down mode. This triggers a hard reset.
-    // Section 8.8.2 in the datasheet says the oscillator start-up time is the start up time of the crystal + 37,74µs. Let us be generous: 50ms.
+    // Section 8.8.2 in the datasheet says the oscillator start-up time is the start up time of the crystal + 37,74ï¿½s. Let us be generous: 50ms.
     delay(50);
   }
   else { // Perform a soft reset
@@ -590,7 +594,7 @@ void MFRC522::PCD_Init() {
   // f_timer = 13.56 MHz / (2*TPreScaler+1) where TPreScaler = [TPrescaler_Hi:TPrescaler_Lo].
   // TPrescaler_Hi are the four low bits in TModeReg. TPrescaler_Lo is TPrescalerReg.
   PCD_WriteRegister(TModeReg, 0x80);      // TAuto=1; timer starts automatically at the end of the transmission in all communication modes at all speeds
-  PCD_WriteRegister(TPrescalerReg, 0xA9);   // TPreScaler = TModeReg[3..0]:TPrescalerReg, ie 0x0A9 = 169 => f_timer=40kHz, ie a timer period of 25µs.
+  PCD_WriteRegister(TPrescalerReg, 0xA9);   // TPreScaler = TModeReg[3..0]:TPrescalerReg, ie 0x0A9 = 169 => f_timer=40kHz, ie a timer period of 25ï¿½s.
   PCD_WriteRegister(TReloadRegH, 0x03);   // Reload timer with 0x3E8 = 1000, ie 25ms before timeout.
   PCD_WriteRegister(TReloadRegL, 0xE8);
   
@@ -626,7 +630,7 @@ void MFRC522::PCD_Reset() {
   PCD_WriteRegister(CommandReg, PCD_SoftReset); // Issue the SoftReset command.
   // The datasheet does not mention how long the SoftRest command takes to complete.
   // But the MFRC522 might have been in soft power-down mode (triggered by bit 4 of CommandReg) 
-  // Section 8.8.2 in the datasheet says the oscillator start-up time is the start up time of the crystal + 37,74µs. Let us be generous: 50ms.
+  // Section 8.8.2 in the datasheet says the oscillator start-up time is the start up time of the crystal + 37,74ï¿½s. Let us be generous: 50ms.
   delay(50);
   // Wait for the PowerDown bit in CommandReg to be cleared
   while (PCD_ReadRegister(CommandReg) & (1<<4)) {
@@ -816,7 +820,7 @@ MFRC522::StatusCode MFRC522::PCD_CommunicateWithPICC( byte command,   ///< The c
   
   // Wait for the command to complete.
   // In PCD_Init() we set the TAuto flag in TModeReg. This means the timer automatically starts when the PCD stops transmitting.
-  // Each iteration of the do-while-loop takes 17.86µs.
+  // Each iteration of the do-while-loop takes 17.86ï¿½s.
   // TODO check/modify for other architectures than Arduino Uno 16bit
   i = 2000;
   while (1) {
